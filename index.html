@@ -27,6 +27,7 @@
             grid-template-columns: 70px 1fr;
             grid-template-rows: 1fr 90px;
             overflow: hidden;
+            user-select: none;
         }
 
         /* --- SIDEBAR --- */
@@ -61,7 +62,6 @@
             padding: 20px 40px;
         }
 
-        /* Top Nav */
         .top-nav {
             display: flex;
             justify-content: space-between;
@@ -69,7 +69,6 @@
             margin-bottom: 40px;
         }
         
-        /* Custom Search Bar with embedded SVG */
         .search-container {
             position: relative;
             display: flex;
@@ -97,7 +96,6 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
 
-        /* Hero Section */
         .hero {
             text-align: center;
             margin-bottom: 40px;
@@ -124,30 +122,12 @@
             fill: var(--text-sub);
         }
 
-        /* Pills */
         .section-title {
             font-size: 18px;
             margin-bottom: 15px;
             font-weight: 600;
         }
-        .pills-container {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 40px;
-        }
-        .pill {
-            flex: 1;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: bold;
-            cursor: pointer;
-            background: linear-gradient(45deg, #2a2a2a, #3a3a3a);
-        }
-        .pill.pop { background: linear-gradient(45deg, #1e4d2b, #2e7d32); }
-        .pill.country { background: linear-gradient(45deg, #8d4004, #d84315); }
-        .pill.hiphop { background: linear-gradient(45deg, #4a148c, #7b1fa2); }
-
+        
         /* Database Tracks Section */
         .db-tracks {
             background: rgba(0,0,0,0.2);
@@ -157,18 +137,24 @@
         }
         .song-item {
             display: grid;
-            grid-template-columns: 40px 1fr 50px;
+            grid-template-columns: 40px 1fr;
             align-items: center;
             padding: 12px;
             border-radius: 8px;
             cursor: pointer;
             transition: 0.2s;
         }
+        .song-item.active {
+            background-color: rgba(255,255,255,0.1);
+        }
+        .song-item.active .song-title {
+            color: var(--accent-green);
+        }
         .song-item:hover { background-color: rgba(255,255,255,0.05); }
         .song-title { font-weight: bold; font-size: 15px; color: var(--text-main); }
         .song-artist { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
         .play-indicator { fill: var(--accent-green); opacity: 0; width: 16px; height: 16px; }
-        .song-item:hover .play-indicator { opacity: 1; }
+        .song-item:hover .play-indicator, .song-item.active .play-indicator { opacity: 1; }
 
         /* --- BOTTOM PLAYER --- */
         .player-bar {
@@ -180,6 +166,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
+            z-index: 10;
         }
         
         .track-info {
@@ -189,12 +176,14 @@
             gap: 15px;
         }
         .album-art {
-            width: 50px;
-            height: 50px;
-            background-color: #333;
+            width: 56px;
+            height: 56px;
+            background-color: #282828;
             border-radius: 6px;
+            background-size: cover;
+            background-position: center;
         }
-        #np-title { font-size: 14px; font-weight: bold; }
+        #np-title { font-size: 14px; font-weight: bold; margin-bottom: 4px; }
         #np-artist { font-size: 12px; color: var(--text-sub); }
 
         .player-controls {
@@ -213,18 +202,22 @@
             width: 16px; height: 16px;
             fill: var(--text-sub);
             cursor: pointer;
+            transition: 0.2s;
         }
         .btn-icon:hover { fill: var(--text-main); }
+        
         .play-btn {
             width: 32px; height: 32px;
             background-color: var(--text-main);
             border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
             cursor: pointer;
+            transition: 0.2s;
         }
-        .play-btn svg { width: 16px; height: 16px; fill: black; margin-left: 2px; }
+        .play-btn:hover { transform: scale(1.05); }
+        .play-btn svg { width: 16px; height: 16px; fill: black; }
+        #play-icon { margin-left: 2px; }
         
-        /* Custom Progress Bar */
         .progress-container {
             width: 100%;
             display: flex;
@@ -240,16 +233,49 @@
             border-radius: 2px;
             cursor: pointer;
             position: relative;
+            transition: height 0.1s;
         }
+        .progress-bar-bg:hover { height: 6px; }
+        .progress-bar-bg:hover .progress-bar-fill { background-color: #1ed760; }
         .progress-bar-fill {
             height: 100%;
-            background-color: var(--accent-green);
+            background-color: var(--text-main);
             border-radius: 2px;
             width: 0%;
+            pointer-events: none;
         }
 
-        .volume-controls { width: 30%; }
-        
+        /* Volume Controls */
+        .volume-controls { 
+            width: 30%; 
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--text-main);
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .volume-slider:hover::-webkit-slider-thumb { opacity: 1; }
+        .volume-slider:hover { background: #1ed760; }
+
         audio { display: none; }
     </style>
 </head>
@@ -265,15 +291,11 @@
     <div class="main-view">
         <div class="top-nav">
             <div style="font-size: 12px; color: var(--text-sub);">Artists > Top 2024</div>
-            
             <div class="search-container">
                 <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C5.91 14 3 11.09 3 9.5S5.91 5 9.5 5 16 7.91 16 9.5 11.09 14 9.5 14z"/></svg>
                 <input type="text" class="search-bar" placeholder="What do you want to listen to?">
             </div>
-
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <div style="width:30px; height:30px; background:#444; border-radius:50%;"></div>
-            </div>
+            <div style="width:30px; height:30px; background:#444; border-radius:50%;"></div>
         </div>
 
         <div class="hero">
@@ -282,15 +304,6 @@
                 <svg class="sparkle-icon" viewBox="0 0 24 24"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4L12 2z"/></svg>
                 made for you
             </div>
-        </div>
-
-        <div class="section-title">Explore</div>
-        <div class="pills-container">
-            <div class="pill pop">Pop</div>
-            <div class="pill country">Country</div>
-            <div class="pill hiphop">Hip-Hop</div>
-            <div class="pill" style="background: linear-gradient(45deg, #004d40, #00796b);">Rock</div>
-            <div class="pill" style="background: linear-gradient(45deg, #263238, #455a64);">Indie</div>
         </div>
 
         <div class="section-title">Your Tracks</div>
@@ -303,7 +316,7 @@
         <div class="track-info">
             <div class="album-art" id="np-art"></div>
             <div>
-                <div id="np-title">Select a track</div>
+                <div id="np-title">No track selected</div>
                 <div id="np-artist">-</div>
             </div>
         </div>
@@ -311,10 +324,12 @@
         <div class="player-controls">
             <div class="control-buttons">
                 <svg class="btn-icon" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                
                 <div class="play-btn" id="play-pause-btn">
                     <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                     <svg id="pause-icon" viewBox="0 0 24 24" style="display: none; margin-left: 0;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                 </div>
+                
                 <svg class="btn-icon" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
             </div>
             <div class="progress-container">
@@ -326,7 +341,10 @@
             </div>
         </div>
 
-        <div class="volume-controls"></div>
+        <div class="volume-controls">
+            <svg class="btn-icon" viewBox="0 0 24 24" style="width: 20px; height: 20px;"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+            <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.01">
+        </div>
     </div>
 
     <audio id="audio-player"></audio>
@@ -339,11 +357,28 @@
         const playPauseBtn = document.getElementById('play-pause-btn');
         const playIcon = document.getElementById('play-icon');
         const pauseIcon = document.getElementById('pause-icon');
+        const progressBg = document.getElementById('progress-bg');
         const progressFill = document.getElementById('progress-fill');
         const timeCurrent = document.getElementById('time-current');
+        const timeTotal = document.getElementById('time-total');
         const npTitle = document.getElementById('np-title');
         const npArtist = document.getElementById('np-artist');
+        const npArt = document.getElementById('np-art');
+        const volSlider = document.getElementById('volume-slider');
 
+        // --- 1. VOLUME PERSISTENCE ---
+        // Grab saved volume from browser storage, default to 50% if none exists
+        let savedVol = localStorage.getItem('audioStreamVol') || 0.5;
+        audio.volume = savedVol;
+        volSlider.value = savedVol;
+
+        volSlider.addEventListener('input', (e) => {
+            const newVol = e.target.value;
+            audio.volume = newVol;
+            localStorage.setItem('audioStreamVol', newVol); // Save it forever
+        });
+
+        // --- 2. FETCH & LOAD SONGS ---
         async function fetchSongs() {
             try {
                 const response = await fetch(apiUrl, {
@@ -372,14 +407,25 @@
                             <div class="song-title">${song.title}</div>
                             <div class="song-artist">${song.artist}</div>
                         </div>
-                        <div style="color: var(--text-sub); font-size: 12px;">3:45</div>
                     `;
                     
                     songItem.onclick = () => {
+                        // Remove active class from all, add to this one
+                        document.querySelectorAll('.song-item').forEach(el => el.classList.remove('active'));
+                        songItem.classList.add('active');
+
                         audio.src = song.audio_url;      
                         audio.play();                    
+                        
                         npTitle.innerText = song.title; 
                         npArtist.innerText = song.artist; 
+                        
+                        // Load cover art if it exists in DB, otherwise stay blank
+                        if(song.cover_url) {
+                            npArt.style.backgroundImage = \`url('\${song.cover_url}')\`;
+                        } else {
+                            npArt.style.backgroundImage = 'none';
+                        }
                         
                         playIcon.style.display = 'none';
                         pauseIcon.style.display = 'block';
@@ -392,6 +438,7 @@
             }
         }
 
+        // --- 3. PLAY/PAUSE LOGIC ---
         playPauseBtn.onclick = () => {
             if (!audio.src) return; 
             
@@ -406,17 +453,37 @@
             }
         };
 
+        // Format time helper (e.g., 65s -> "1:05")
+        function formatTime(seconds) {
+            let mins = Math.floor(seconds / 60);
+            let secs = Math.floor(seconds % 60);
+            if (secs < 10) secs = "0" + secs;
+            return mins + ":" + secs;
+        }
+
+        // --- 4. PROGRESS BAR & SEEKING ---
+        // Update total time when a song fully loads its metadata
+        audio.onloadedmetadata = () => {
+            timeTotal.innerText = formatTime(audio.duration);
+        };
+
+        // Update progress bar as song plays
         audio.ontimeupdate = () => {
             if (!audio.duration) return;
-            
             const percent = (audio.currentTime / audio.duration) * 100;
             progressFill.style.width = percent + '%';
-
-            let currentMins = Math.floor(audio.currentTime / 60);
-            let currentSecs = Math.floor(audio.currentTime - currentMins * 60);
-            if (currentSecs < 10) currentSecs = "0" + currentSecs;
-            timeCurrent.innerText = currentMins + ":" + currentSecs;
+            timeCurrent.innerText = formatTime(audio.currentTime);
         };
+
+        // Make progress bar clickable to skip forward/backward
+        progressBg.addEventListener('click', (e) => {
+            if (!audio.duration) return;
+            const rect = progressBg.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const clickPercent = clickX / width;
+            audio.currentTime = clickPercent * audio.duration;
+        });
 
         fetchSongs();
     </script>

@@ -17,6 +17,13 @@
         }
 
         * { box-sizing: border-box; }
+        
+        /* --- CUSTOM SCROLLBARS --- */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.3); border-radius: 10px; border: 2px solid var(--bg-main); }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.5); }
+
         body {
             margin: 0; padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -38,10 +45,7 @@
             display: flex; flex-direction: column; align-items: center;
             padding: 24px 0; gap: 32px;
         }
-        .sidebar-icon {
-            width: 24px; height: 24px; fill: var(--text-subdued);
-            cursor: pointer; transition: 0.2s;
-        }
+        .sidebar-icon { width: 24px; height: 24px; fill: var(--text-subdued); cursor: pointer; transition: 0.2s; }
         .sidebar-icon:hover, .sidebar-icon.active { fill: var(--text-base); }
 
         /* --- MAIN VIEW CONTAINER --- */
@@ -63,14 +67,13 @@
         .search-container {
             position: relative; display: flex; align-items: center;
             background-color: #242424; border-radius: 500px;
-            padding: 0 12px; width: 364px; border: 1px solid transparent;
-            transition: 0.3s; margin: 0 auto;
+            padding: 0 12px; width: 364px; border: 1px solid transparent; transition: 0.3s; margin: 0 auto;
         }
         .search-container:hover, .search-container:focus-within { border-color: rgba(255,255,255,0.2); background-color: #2a2a2a; }
         .search-icon { width: 20px; height: 20px; fill: var(--text-subdued); margin-right: 8px; }
         .search-bar { background: transparent; border: none; color: var(--text-base); width: 100%; height: 48px; font-size: 14px; outline: none; }
 
-        /* --- VIEWS (SPA Swapping) --- */
+        /* --- VIEWS --- */
         .view-section {
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             overflow-y: auto; padding: 100px 32px 32px 32px;
@@ -96,11 +99,23 @@
         .song-item:hover { background-color: rgba(255,255,255,0.1); }
         .song-item.active-song .song-title { color: var(--accent); }
         .song-index { color: var(--text-subdued); font-size: 14px; display: flex; justify-content: center; width: 16px; }
-        .play-indicator { fill: var(--text-base); display: none; width: 14px; height: 14px; }
-        .song-item:hover .song-index { display: none; }
-        .song-item:hover .play-indicator { display: block; }
+        
+        /* AUDIO VISUALIZER (HOME PAGE) */
+        .playing-visualizer { display: none; width: 14px; height: 14px; justify-content: space-between; align-items: flex-end; margin: 0 auto; }
+        .song-item.active-song .playing-visualizer { display: flex; }
         .song-item.active-song .song-index { display: none; }
-        .song-item.active-song .play-indicator { display: block; fill: var(--accent); }
+        .playing-visualizer span { width: 2px; background-color: var(--accent); animation: bounce 0.5s infinite alternate; border-radius: 1px; }
+        .playing-visualizer span:nth-child(1) { animation-delay: 0s; }
+        .playing-visualizer span:nth-child(2) { animation-delay: 0.2s; }
+        .playing-visualizer span:nth-child(3) { animation-delay: 0.4s; }
+        .playing-visualizer span:nth-child(4) { animation-delay: 0.1s; }
+        .playing-visualizer.paused span { animation: none !important; height: 2px !important; }
+
+        @keyframes bounce {
+            0% { height: 2px; }
+            100% { height: 14px; }
+        }
+
         .song-title { font-weight: 500; font-size: 16px; color: var(--text-base); margin-bottom: 4px; }
         .song-artist { font-size: 14px; color: var(--text-subdued); }
 
@@ -113,6 +128,14 @@
         }
         .lyric-line:hover { opacity: 0.8; }
         .lyric-line.active-lyric { color: #ffffff; opacity: 1; font-size: 36px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        
+        /* LYRICS SECTION HEADERS (Verse, Chorus, etc.) */
+        .lyric-section {
+            font-size: 16px; color: var(--accent); text-transform: uppercase;
+            letter-spacing: 2px; margin-top: 48px; margin-bottom: 16px; font-weight: 800;
+            opacity: 1; cursor: default;
+        }
+        .lyric-section:hover { opacity: 1; }
 
         /* --- PLAYER BAR --- */
         .player-bar {
@@ -134,9 +157,8 @@
         .btn-icon.active { fill: var(--accent); }
         
         .play-btn {
-            width: 32px; height: 32px; border-radius: 50%;
-            background-color: var(--text-base); display: flex; justify-content: center; align-items: center;
-            cursor: pointer; transition: 0.2s;
+            width: 32px; height: 32px; border-radius: 50%; background-color: var(--text-base);
+            display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s;
         }
         .play-btn:hover { transform: scale(1.06); background-color: #fff; }
         .play-btn svg { width: 16px; height: 16px; fill: #000; margin-left: 2px;}
@@ -224,7 +246,6 @@
     <audio id="audio-player"></audio>
 
     <script>
-        // Restored simple Supabase URL - no lyrics join required!
         const apiUrl = 'https://xdebyjfkijaertthzjup.supabase.co/rest/v1/songs?select=*';
         const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkZWJ5amZraWphZXJ0dGh6anVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTU4NjgsImV4cCI6MjA4ODczMTg2OH0.QPPyLb7SbY7ChzwDejlGC9dqqX0nEGiFHND402pqEDo';
         
@@ -241,7 +262,7 @@
         audio.volume = localStorage.getItem('audioStreamVol') || 0.5;
         document.getElementById('volume-slider').value = audio.volume;
 
-        // --- 1. FETCH FROM SUPABASE ---
+        // --- 1. FETCH ---
         async function fetchSongs() {
             try {
                 const res = await fetch(apiUrl, { headers: { 'apikey': anonKey, 'Authorization': `Bearer ${anonKey}` } });
@@ -249,14 +270,14 @@
                 songList = await res.json();
                 renderList(songList);
             } catch (err) { 
-                console.error("DB Fetch Error:", err); 
-                songListContainer.innerHTML = '<div style="color:#e91429; padding:16px;">Error connecting to Supabase. Check your tables!</div>';
+                console.error(err); 
+                songListContainer.innerHTML = '<div style="color:#e91429; padding:16px;">Error connecting to DB.</div>';
             }
         }
 
         function renderList(listToRender) {
             if (listToRender.length === 0) {
-                songListContainer.innerHTML = '<div style="color:var(--text-subdued); padding:16px;">No tracks found. Add some rows to your Supabase table!</div>';
+                songListContainer.innerHTML = '<div style="color:var(--text-subdued); padding:16px;">No tracks found.</div>';
                 return;
             }
             songListContainer.innerHTML = ''; 
@@ -265,10 +286,14 @@
                 const div = document.createElement('div');
                 div.className = `song-item ${absoluteIndex === currentSongIndex ? 'active-song' : ''}`;
                 div.id = `song-row-${absoluteIndex}`;
+                
+                // Note the animated visualizer spans replacing the static play icon!
                 div.innerHTML = `
-                    <div style="position: relative; width: 16px; margin: 0 auto;">
+                    <div style="position: relative; width: 16px; margin: 0 auto; display: flex; justify-content: center;">
                         <span class="song-index">${absoluteIndex + 1}</span>
-                        <svg class="play-indicator" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <div class="playing-visualizer" id="viz-${absoluteIndex}">
+                            <span></span><span></span><span></span><span></span>
+                        </div>
                     </div>
                     <div>
                         <div class="song-title">${song.title}</div>
@@ -278,6 +303,9 @@
                 div.onclick = () => playSong(absoluteIndex);
                 songListContainer.appendChild(div);
             });
+            
+            // Re-apply visualizer paused state if needed after re-rendering
+            updateVisualizerState();
         }
 
         searchInput.addEventListener('input', (e) => {
@@ -285,33 +313,31 @@
             renderList(songList.filter(s => s.title.toLowerCase().includes(term) || s.artist.toLowerCase().includes(term)));
         });
 
-        // --- 2. PLAYBACK & API LYRICS FETCHER ---
+        // --- 2. PLAYBACK & API ---
         async function playSong(index) {
             if (index < 0 || index >= songList.length) return;
             currentSongIndex = index;
             const song = songList[currentSongIndex];
 
-            // UI
             document.querySelectorAll('.song-item').forEach(el => el.classList.remove('active-song'));
             const row = document.getElementById(`song-row-${index}`);
             if(row) row.classList.add('active-song');
+            
             document.getElementById('np-title').innerText = song.title; 
             document.getElementById('np-artist').innerText = song.artist; 
             document.getElementById('np-art').style.backgroundImage = song.cover_url ? `url('${song.cover_url}')` : 'none';
 
-            // Audio
             audio.src = song.audio_url;      
             audio.play();                    
             document.getElementById('play-icon').style.display = 'none';
             document.getElementById('pause-icon').style.display = 'block';
+            updateVisualizerState();
 
-            // Exclusively hit the public API for lyrics
             lyricsContainer.innerHTML = '<div class="lyric-line" style="text-align:center;">Searching for lyrics...</div>';
             currentLyricsData = null;
             
             try {
                 const lrcRes = await fetch(`https://lrclib.net/api/get?track_name=${encodeURIComponent(song.title)}&artist_name=${encodeURIComponent(song.artist)}`);
-                
                 if (!lrcRes.ok) throw new Error('Not found');
                 const lrcData = await lrcRes.json();
                 
@@ -328,7 +354,7 @@
             }
         }
 
-        // --- 3. LRC PARSER ---
+        // --- 3. LRC PARSER WITH SECTION DETECTION ---
         function parseLRC(lrcString) {
             const lines = lrcString.split('\n');
             const parsed = [];
@@ -349,15 +375,26 @@
             currentLyricsData = lyricsArray;
             currentLyricsData.forEach((lineData, i) => {
                 const p = document.createElement('div');
-                p.className = 'lyric-line';
-                p.id = `lyric-${i}`;
-                p.innerText = lineData.text;
-                p.onclick = () => { audio.currentTime = lineData.time; };
+                
+                // SECTION DETECTION REGEX: Matches things like [Verse], (Chorus), or lines that are JUST "Hook"
+                const isSectionHeader = /^\[.*\]$/.test(lineData.text) || /^\(?(verse|chorus|hook|bridge|intro|outro).*\)?$/i.test(lineData.text.trim());
+                
+                if (isSectionHeader) {
+                    p.className = 'lyric-section';
+                    // Strip the brackets for a cleaner look
+                    p.innerText = lineData.text.replace(/\[|\]|\(|\)/g, '');
+                } else {
+                    p.className = 'lyric-line';
+                    p.id = `lyric-${i}`;
+                    p.innerText = lineData.text;
+                    p.onclick = () => { audio.currentTime = lineData.time; };
+                }
+                
                 lyricsContainer.appendChild(p);
             });
         }
 
-        // --- 4. SPA VIEW SWAPPING ---
+        // --- 4. VIEW SWAPPING ---
         const navHome = document.getElementById('nav-home');
         const lyricsToggleBtn = document.getElementById('lyrics-toggle-btn');
         const homeView = document.getElementById('home-view');
@@ -404,8 +441,8 @@
             }
         };
 
-        // --- 6. PLAYER CONTROLS ---
-        document.getElementById('play-pause-btn').onclick = () => {
+        // --- 6. CONTROLS, SPACEBAR SHORTCUT, & VISUALIZER STATE ---
+        function togglePlay() {
             if (!audio.src) return; 
             if (audio.paused) {
                 audio.play();
@@ -416,7 +453,29 @@
                 document.getElementById('pause-icon').style.display = 'none';
                 document.getElementById('play-icon').style.display = 'block';
             }
-        };
+            updateVisualizerState();
+        }
+
+        document.getElementById('play-pause-btn').onclick = togglePlay;
+
+        // Spacebar Keyboard Shortcut
+        document.addEventListener('keydown', (e) => {
+            // Check if spacebar is pressed AND the user isn't currently typing in the search bar
+            if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+                e.preventDefault(); // Prevents the browser from scrolling down
+                togglePlay();
+            }
+        });
+
+        function updateVisualizerState() {
+            document.querySelectorAll('.playing-visualizer').forEach(viz => {
+                if (audio.paused) viz.classList.add('paused');
+                else viz.classList.remove('paused');
+            });
+        }
+
+        audio.onplay = updateVisualizerState;
+        audio.onpause = updateVisualizerState;
 
         document.getElementById('next-btn').onclick = () => {
             if (songList.length === 0) return;

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AudioStream</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         body {
@@ -80,38 +79,42 @@
     </div>
 
     <script>
-        const supabaseUrl = 'https://xdebyjfkijaertthzjup.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkZWJ5amZraWphZXJ0dGh6anVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTU4NjgsImV4cCI6MjA4ODczMTg2OH0.QPPyLb7SbY7ChzwDejlGC9dqqX0nEGiFHND402pqEDo';
+        // We use the raw REST API endpoint instead of the library
+        const apiUrl = 'https://xdebyjfkijaertthzjup.supabase.co/rest/v1/songs?select=*';
+        const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkZWJ5amZraWphZXJ0dGh6anVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTU4NjgsImV4cCI6MjA4ODczMTg2OH0.QPPyLb7SbY7ChzwDejlGC9dqqX0nEGiFHND402pqEDo';
         
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-
         const audioPlayer = document.getElementById('audio-player');
         const nowPlayingText = document.getElementById('now-playing');
         const songListDiv = document.getElementById('song-list');
 
         async function fetchSongs() {
             try {
-                const { data, error } = await supabase
-                    .from('songs')
-                    .select('*');
+                // Fetching directly from the database URL
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': anonKey,
+                        'Authorization': `Bearer ${anonKey}`
+                    }
+                });
 
-                // IF SUPABASE REJECTS THE REQUEST, PRINT IT ON SCREEN
-                if (error) {
-                    songListDiv.innerHTML = `
-                        <div class="error-text">
-                            <strong>Supabase Error:</strong><br> ${error.message}
-                            <br><br><em>(Hint: If this says anything about policies or security, you need to turn off Row Level Security (RLS) for your 'songs' table in the Supabase Dashboard!)</em>
-                        </div>`;
+                // Check if Supabase yelled at us (like an RLS block)
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    songListDiv.innerHTML = `<div class="error-text"><strong>Database Blocked:</strong><br>${errorData.message || 'Access Denied'}<br><br><em>Did you turn off RLS for the songs table in Supabase?</em></div>`;
                     return;
                 }
 
-                // IF DATABASE IS EMPTY
-                if (!data || data.length === 0) {
-                    songListDiv.innerHTML = '<div class="error-text">No songs found in the database. Did you add rows to your "songs" table?</div>';
+                // Convert the response to usable data
+                const data = await response.json();
+
+                // Check if it's empty
+                if (data.length === 0) {
+                    songListDiv.innerHTML = '<div class="error-text">No songs found. Add some rows to your Supabase table!</div>';
                     return;
                 }
 
-                // IF EVERYTHING WORKS, RENDER THE SONGS
+                // If it works, build the playlist!
                 songListDiv.innerHTML = ''; 
                 
                 data.forEach(song => {
@@ -132,8 +135,8 @@
                 });
 
             } catch (err) {
-                // IF THE CODE CRASHES ENTIRELY
-                songListDiv.innerHTML = `<div class="error-text"><strong>Critical Error:</strong> ${err.message}</div>`;
+                // This catches network blocks or offline issues
+                songListDiv.innerHTML = `<div class="error-text"><strong>Network Error:</strong> ${err.message}<br><br>Your school might be blocking the database URL completely.</div>`;
             }
         }
 

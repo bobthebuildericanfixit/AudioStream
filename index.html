@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudioStream</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+            margin: 0;
+        }
+        .player-container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 24px;
+        }
+        #now-playing {
+            color: #1db954; /* A familiar shade of green */
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        audio {
+            width: 100%;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        .playlist {
+            margin-top: 10px;
+            border-top: 1px solid #333;
+            padding-top: 10px;
+        }
+        .song-item {
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 15px;
+        }
+        .song-item:hover {
+            background-color: #2a2a2a;
+        }
+        .song-artist {
+            font-size: 12px;
+            color: #b3b3b3;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        <h1>AudioStream</h1>
+        <div id="now-playing">Select a track from the playlist</div>
+        
+        <audio id="audio-player" controls>
+            Your browser does not support the audio element.
+        </audio>
+
+        <h3>Your Playlist</h3>
+        <div class="playlist" id="song-list">
+            Loading your tracks...
+        </div>
+    </div>
+
+    <script>
+        // 1. Initialize Supabase with your specific credentials
+        const supabaseUrl = 'https://xdebyjfkijaertthzjup.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkZWJ5amZraWphZXJ0dGh6anVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTU4NjgsImV4cCI6MjA4ODczMTg2OH0.QPPyLb7SbY7ChzwDejlGC9dqqX0nEGiFHND402pqEDo';
+        
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Get our HTML elements
+        const audioPlayer = document.getElementById('audio-player');
+        const nowPlayingText = document.getElementById('now-playing');
+        const songListDiv = document.getElementById('song-list');
+
+        // 2. Fetch songs and build the playlist
+        async function fetchSongs() {
+            const { data, error } = await supabase
+                .from('songs')
+                .select('*');
+
+            songListDiv.innerHTML = ''; // Clear loading text
+
+            if (error) {
+                console.error('Error fetching songs:', error);
+                songListDiv.innerText = 'Failed to load database. Check console.';
+                return;
+            }
+
+            if (data.length === 0) {
+                songListDiv.innerText = 'No songs found. Add some to your Supabase database!';
+                return;
+            }
+
+            // Loop through each song in the database and create a clickable item
+            data.forEach(song => {
+                const songItem = document.createElement('div');
+                songItem.className = 'song-item';
+                
+                // Set the HTML inside the song item
+                songItem.innerHTML = `
+                    <div><strong>${song.title}</strong></div>
+                    <div class="song-artist">${song.artist}</div>
+                `;
+                
+                // Add the click event to play the specific song
+                songItem.onclick = () => {
+                    audioPlayer.src = song.audio_url;      // Change the audio source
+                    audioPlayer.play();                    // Force it to play
+                    nowPlayingText.innerText = `Now Playing: ${song.title}`; // Update text
+                };
+                
+                songListDiv.appendChild(songItem);
+            });
+        }
+
+        // 3. Trigger the fetch function
+        fetchSongs();
+    </script>
+</body>
+</html>

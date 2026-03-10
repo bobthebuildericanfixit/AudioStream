@@ -6,90 +6,213 @@
     <title>AudioStream</title>
     
     <style>
+        /* CSS Variables for the classic color palette */
+        :root {
+            --bg-base: #121212;
+            --bg-sidebar: #000000;
+            --bg-player: #181818;
+            --accent-green: #1db954;
+            --text-main: #ffffff;
+            --text-sub: #b3b3b3;
+            --hover-bg: #2a2a2a;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            padding-top: 50px;
             margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            height: 100vh;
+            display: grid;
+            /* This grid creates the classic 3-panel layout */
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: 1fr 90px;
+            overflow: hidden;
         }
-        .player-container {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 450px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            background-color: var(--bg-sidebar);
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
-        h1 { margin-top: 0; font-size: 24px; }
-        #now-playing {
-            color: #1db954; 
+        .logo {
+            font-size: 24px;
             font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-        audio {
-            width: 100%;
+            color: var(--text-main);
             margin-bottom: 20px;
-            outline: none;
         }
-        .playlist {
-            margin-top: 10px;
-            border-top: 1px solid #333;
-            padding-top: 10px;
+        .nav-item {
+            color: var(--text-sub);
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .nav-item:hover {
+            color: var(--text-main);
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-view {
+            background: linear-gradient(to bottom, #333333 0%, var(--bg-base) 100%);
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .header h1 {
+            font-size: 48px;
+            margin: 0 0 20px 0;
+        }
+        
+        /* Playlist Table Design */
+        .playlist-header {
+            display: grid;
+            grid-template-columns: 50px 1fr;
+            color: var(--text-sub);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
         .song-item {
-            padding: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-size: 15px;
-        }
-        .song-item:hover { background-color: #2a2a2a; }
-        .song-artist {
-            font-size: 12px;
-            color: #b3b3b3;
-            margin-top: 4px;
-        }
-        .error-text {
-            color: #ff4444;
-            background: #2a0000;
+            display: grid;
+            grid-template-columns: 50px 1fr;
+            align-items: center;
             padding: 10px;
             border-radius: 5px;
+            cursor: pointer;
+        }
+        .song-item:hover {
+            background-color: var(--hover-bg);
+        }
+        .song-title {
+            font-size: 16px;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+        .song-artist {
             font-size: 14px;
+            color: var(--text-sub);
+        }
+        .play-icon {
+            color: var(--text-sub);
+            font-size: 14px;
+        }
+
+        /* --- BOTTOM PLAYER --- */
+        .now-playing-bar {
+            background-color: var(--bg-player);
+            grid-column: 1 / 3;
+            grid-row: 2 / 3;
+            border-top: 1px solid #282828;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        .track-info {
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        #now-playing-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+        #now-playing-artist {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 3px;
+        }
+        .player-controls {
+            width: 40%;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* Styling the default HTML audio player to fit in better for now */
+        audio {
+            width: 100%;
+            max-width: 500px;
+            height: 40px;
+            outline: none;
+        }
+        
+        .volume-controls {
+            width: 30%;
+        }
+
+        /* Error Text */
+        .error-text {
+            color: #ff4444;
+            background: rgba(255, 0, 0, 0.1);
+            padding: 15px;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
 
-    <div class="player-container">
-        <h1>AudioStream</h1>
-        <div id="now-playing">Select a track from the playlist</div>
-        
-        <audio id="audio-player" controls>
-            Your browser does not support the audio element.
-        </audio>
+    <div class="sidebar">
+        <div class="logo">AudioStream</div>
+        <div class="nav-item">🏠 Home</div>
+        <div class="nav-item">🔍 Search</div>
+        <div class="nav-item">📚 Your Library</div>
+    </div>
 
-        <h3>Your Playlist</h3>
-        <div class="playlist" id="song-list">
-            Loading your tracks...
+    <div class="main-view">
+        <div class="header">
+            <h1>Liked Songs</h1>
+        </div>
+        
+        <div class="playlist-header">
+            <div>#</div>
+            <div>Title</div>
+        </div>
+
+        <div id="song-list">
+            <div style="color: var(--text-sub); margin-top: 20px;">Loading your tracks...</div>
         </div>
     </div>
 
+    <div class="now-playing-bar">
+        <div class="track-info">
+            <div id="now-playing-title">No track selected</div>
+            <div id="now-playing-artist">-</div>
+        </div>
+        
+        <div class="player-controls">
+            <audio id="audio-player" controls>
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+
+        <div class="volume-controls">
+            </div>
+    </div>
+
     <script>
-        // We use the raw REST API endpoint instead of the library
         const apiUrl = 'https://xdebyjfkijaertthzjup.supabase.co/rest/v1/songs?select=*';
         const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkZWJ5amZraWphZXJ0dGh6anVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTU4NjgsImV4cCI6MjA4ODczMTg2OH0.QPPyLb7SbY7ChzwDejlGC9dqqX0nEGiFHND402pqEDo';
         
         const audioPlayer = document.getElementById('audio-player');
-        const nowPlayingText = document.getElementById('now-playing');
+        const nowPlayingTitle = document.getElementById('now-playing-title');
+        const nowPlayingArtist = document.getElementById('now-playing-artist');
         const songListDiv = document.getElementById('song-list');
 
         async function fetchSongs() {
             try {
-                // Fetching directly from the database URL
                 const response = await fetch(apiUrl, {
                     method: 'GET',
                     headers: {
@@ -98,45 +221,49 @@
                     }
                 });
 
-                // Check if Supabase yelled at us (like an RLS block)
                 if (!response.ok) {
                     const errorData = await response.json();
-                    songListDiv.innerHTML = `<div class="error-text"><strong>Database Blocked:</strong><br>${errorData.message || 'Access Denied'}<br><br><em>Did you turn off RLS for the songs table in Supabase?</em></div>`;
+                    songListDiv.innerHTML = `<div class="error-text">Database Blocked: ${errorData.message}</div>`;
                     return;
                 }
 
-                // Convert the response to usable data
                 const data = await response.json();
 
-                // Check if it's empty
                 if (data.length === 0) {
-                    songListDiv.innerHTML = '<div class="error-text">No songs found. Add some rows to your Supabase table!</div>';
+                    songListDiv.innerHTML = '<div class="error-text">No songs found in your Supabase database.</div>';
                     return;
                 }
 
-                // If it works, build the playlist!
                 songListDiv.innerHTML = ''; 
                 
+                // Track counter for the numbering
+                let trackNumber = 1;
+
                 data.forEach(song => {
                     const songItem = document.createElement('div');
                     songItem.className = 'song-item';
+                    
                     songItem.innerHTML = `
-                        <div><strong>${song.title}</strong></div>
-                        <div class="song-artist">${song.artist}</div>
+                        <div class="play-icon">${trackNumber}</div>
+                        <div>
+                            <div class="song-title">${song.title}</div>
+                            <div class="song-artist">${song.artist}</div>
+                        </div>
                     `;
                     
                     songItem.onclick = () => {
                         audioPlayer.src = song.audio_url;      
                         audioPlayer.play();                    
-                        nowPlayingText.innerText = `Now Playing: ${song.title}`; 
+                        nowPlayingTitle.innerText = song.title; 
+                        nowPlayingArtist.innerText = song.artist; 
                     };
                     
                     songListDiv.appendChild(songItem);
+                    trackNumber++;
                 });
 
             } catch (err) {
-                // This catches network blocks or offline issues
-                songListDiv.innerHTML = `<div class="error-text"><strong>Network Error:</strong> ${err.message}<br><br>Your school might be blocking the database URL completely.</div>`;
+                songListDiv.innerHTML = `<div class="error-text">Network Error: ${err.message}</div>`;
             }
         }
 

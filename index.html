@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AudioStream Pro - Master Build</title>
+    <title>AudioStream Pro - Master Build w/ Auth</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -40,9 +41,13 @@
         body.theater-mode .main-container { border-radius: 0; }
 
         /* --- SIDEBAR --- */
-        .sidebar { grid-column: 1 / 2; grid-row: 1 / 2; display: flex; flex-direction: column; align-items: center; padding: 24px 0; gap: 32px; transition: opacity 0.3s ease; }
+        .sidebar { grid-column: 1 / 2; grid-row: 1 / 2; display: flex; flex-direction: column; align-items: center; padding: 24px 0; gap: 32px; transition: opacity 0.3s ease; height: 100%; }
         .sidebar-icon { width: 24px; height: 24px; fill: var(--text-subdued); cursor: pointer; transition: 0.2s; }
         .sidebar-icon:hover, .sidebar-icon.active { fill: var(--text-base); }
+        
+        .sidebar-profile { margin-top: auto; cursor: pointer; opacity: 0.6; transition: 0.2s; }
+        .sidebar-profile:hover { opacity: 1; transform: scale(1.1); }
+        .sidebar-profile.logged-in { fill: var(--accent); opacity: 1; }
 
         /* --- MAIN VIEW CONTAINER --- */
         .main-container { grid-column: 2 / 3; grid-row: 1 / 2; background-color: var(--bg-main); border-radius: 8px 0 0 0; overflow: hidden; position: relative; transition: border-radius 0.4s ease;}
@@ -94,7 +99,7 @@
         #resume-sync-btn { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background-color: var(--text-base); color: #000; padding: 8px 24px; border-radius: 500px; font-weight: 700; font-size: 14px; cursor: pointer; opacity: 0; pointer-events: none; transition: 0.3s ease; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         #resume-sync-btn:hover { transform: translateX(-50%) scale(1.05); }
 
-        /* --- ARTIST BIO MODAL --- */
+        /* --- MODALS (ARTIST BIO & AUTH) --- */
         #bio-modal { position: absolute; bottom: -100%; left: 16px; width: 400px; max-height: 60%; background: var(--bg-elevated); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 50; padding: 24px; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow-y: auto; }
         #bio-modal.open { bottom: 100px; }
         .bio-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
@@ -103,6 +108,17 @@
         .bio-close:hover { fill: #fff; }
         #bio-name { font-size: 24px; font-weight: 700; margin: 12px 0 8px 0; }
         #bio-text { font-size: 14px; line-height: 1.6; color: var(--text-subdued); }
+
+        #auth-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 999; }
+        .auth-box { background: var(--bg-elevated); padding: 40px; border-radius: 8px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .auth-box h2 { margin: 0; text-align: center; }
+        .auth-input { background: #333; border: 1px solid transparent; padding: 12px; border-radius: 4px; color: white; font-size: 14px; outline: none; transition: 0.2s; }
+        .auth-input:focus { border-color: var(--accent); background: #444; }
+        .auth-btn { background: var(--accent); color: black; border: none; padding: 14px; border-radius: 500px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; margin-top: 8px; }
+        .auth-btn:hover { transform: scale(1.04); background: #1ed760; }
+        .auth-toggle { text-align: center; font-size: 14px; color: var(--text-subdued); margin-top: 16px; }
+        .auth-close-btn { background: transparent; border: none; color: var(--text-subdued); cursor: pointer; margin-top: 8px; transition: 0.2s;}
+        .auth-close-btn:hover { color: white; }
 
         /* --- PLAYER BAR --- */
         .player-bar { grid-column: 1 / 3; grid-row: 2 / 3; background-color: var(--bg-base); border-top: 1px solid #282828; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 60; }
@@ -141,6 +157,10 @@
 
     <div class="sidebar">
         <svg class="sidebar-icon active" id="nav-home" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        
+        <div class="sidebar-profile" id="auth-trigger-btn" title="Log In">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
     </div>
 
     <div class="main-container">
@@ -169,6 +189,24 @@
             </div>
             <div id="bio-name">Artist Name</div>
             <div id="bio-text">Loading biography...</div>
+        </div>
+    </div>
+
+    <div id="auth-modal-overlay">
+        <div class="auth-box">
+            <h2 id="auth-title">Log In</h2>
+            <p id="auth-error" style="color: #ff4444; font-size: 12px; display: none;"></p>
+            
+            <input type="email" id="auth-email" class="auth-input" placeholder="Email address">
+            <input type="password" id="auth-password" class="auth-input" placeholder="Password">
+            
+            <button id="auth-submit-btn" class="auth-btn">Log In</button>
+            
+            <div class="auth-toggle">
+                <span id="auth-toggle-text">Don't have an account? </span>
+                <span id="auth-toggle-link" style="color: var(--accent); cursor: pointer; font-weight: bold;">Sign Up</span>
+            </div>
+            <button id="auth-close-btn" class="auth-close-btn">Cancel</button>
         </div>
     </div>
 
@@ -211,9 +249,15 @@
     <audio id="audio-player"></audio>
 
     <script>
-        // --- GLOBALS & APIS ---
-        const apiUrl = 'https://xdebyjfkijaertthzjup.supabase.co/rest/v1/songs?select=*';
+        // --- GLOBALS & SUPABASE SETUP ---
         const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkZWJ5amZraWphZXJ0dGh6anVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTU4NjgsImV4cCI6MjA4ODczMTg2OH0.QPPyLb7SbY7ChzwDejlGC9dqqX0nEGiFHND402pqEDo';
+        const supabaseUrl = 'https://xdebyjfkijaertthzjup.supabase.co';
+        
+        // Initialize Supabase SDK
+        const supabase = window.supabase.createClient(supabaseUrl, anonKey);
+
+        let currentUser = null;
+        let isSignUpMode = false;
         
         let songList = [];
         let currentSongIndex = -1;
@@ -242,11 +286,89 @@
         audio.volume = localStorage.getItem('audioStreamVol') || 0.5;
         document.getElementById('volume-slider').value = audio.volume;
 
-        // --- 1. FETCH & MEMORY ---
+        // --- 1. AUTHENTICATION LOGIC ---
+        const authOverlay = document.getElementById('auth-modal-overlay');
+        const authTrigger = document.getElementById('auth-trigger-btn');
+        const authSubmit = document.getElementById('auth-submit-btn');
+        const authToggleLink = document.getElementById('auth-toggle-link');
+        const authToggleText = document.getElementById('auth-toggle-text');
+        const authTitle = document.getElementById('auth-title');
+        const authError = document.getElementById('auth-error');
+
+        // Check if already logged in on load
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                currentUser = session.user;
+                authTrigger.classList.add('logged-in');
+                authTrigger.title = "Log Out";
+            }
+        }
+        checkSession();
+
+        authTrigger.onclick = async () => {
+            if (currentUser) {
+                await supabase.auth.signOut();
+                currentUser = null;
+                authTrigger.classList.remove('logged-in');
+                authTrigger.title = "Log In";
+                alert("Logged out successfully.");
+            } else {
+                authOverlay.style.display = 'flex';
+            }
+        };
+
+        document.getElementById('auth-close-btn').onclick = () => { authOverlay.style.display = 'none'; authError.style.display = 'none'; };
+
+        authToggleLink.onclick = () => {
+            isSignUpMode = !isSignUpMode;
+            authTitle.innerText = isSignUpMode ? "Create Account" : "Log In";
+            authSubmit.innerText = isSignUpMode ? "Sign Up" : "Log In";
+            authToggleText.innerText = isSignUpMode ? "Already have an account? " : "Don't have an account? ";
+            authToggleLink.innerText = isSignUpMode ? "Log In" : "Sign Up";
+            authError.style.display = 'none';
+        };
+
+        authSubmit.onclick = async () => {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            authError.style.display = 'none';
+            authSubmit.innerText = "Processing...";
+
+            if (!email || !password) {
+                authError.innerText = "Please enter both email and password.";
+                authError.style.display = 'block';
+                authSubmit.innerText = isSignUpMode ? "Sign Up" : "Log In";
+                return;
+            }
+
+            let result;
+            if (isSignUpMode) {
+                result = await supabase.auth.signUp({ email, password });
+            } else {
+                result = await supabase.auth.signInWithPassword({ email, password });
+            }
+
+            if (result.error) {
+                authError.innerText = result.error.message;
+                authError.style.display = 'block';
+            } else {
+                currentUser = result.data.user;
+                authTrigger.classList.add('logged-in');
+                authTrigger.title = "Log Out";
+                authOverlay.style.display = 'none';
+                if (isSignUpMode) alert("Account created successfully!");
+            }
+            authSubmit.innerText = isSignUpMode ? "Sign Up" : "Log In";
+        };
+
+        // --- 2. FETCH & MEMORY (Updated to use SDK) ---
         async function fetchSongs() {
             try {
-                const res = await fetch(apiUrl, { headers: { 'apikey': anonKey, 'Authorization': `Bearer ${anonKey}` } });
-                songList = await res.json();
+                const { data, error } = await supabase.from('songs').select('*');
+                if (error) throw error;
+                
+                songList = data;
                 renderList(songList);
                 
                 // Playback Memory Load
@@ -264,7 +386,7 @@
                         });
                     }
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Error fetching songs:", err); }
         }
 
         function renderList(listToRender) {
@@ -292,7 +414,7 @@
             renderList(songList.filter(s => s.title.toLowerCase().includes(term) || s.artist.toLowerCase().includes(term)));
         });
 
-        // --- 2. ENGINE & LYRICS FETCH ---
+        // --- 3. ENGINE & LYRICS FETCH ---
         function loadSongData(song, autoPlay = true) {
             document.querySelectorAll('.song-item').forEach(el => el.classList.remove('active-song'));
             const row = document.getElementById(`song-row-${currentSongIndex}`);
@@ -352,7 +474,7 @@
         }
         audio.onplay = updateVisualizerState; audio.onpause = updateVisualizerState;
 
-        // --- 3. COLORS & UI ---
+        // --- 4. COLORS & UI ---
         function extractDominantColor(url) {
             const img = new Image(); img.crossOrigin = 'Anonymous'; img.src = url;
             img.onload = () => { try {
@@ -366,7 +488,7 @@
             document.documentElement.style.setProperty('--dynamic-bg-dark', '#1e7850');
         }
 
-        // --- 4. LYRICS ENGINE & QOL ---
+        // --- 5. LYRICS ENGINE & QOL ---
         function parseLRC(str) {
             return str.split('\n').map(line => {
                 const match = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
@@ -401,7 +523,7 @@
             if(activeEl) lyricsView.scrollTo({ top: activeEl.offsetTop - (lyricsView.clientHeight / 2) + 100, behavior: 'smooth' });
         };
 
-        // --- 5. PROGRESS & SYNC ---
+        // --- 6. PROGRESS & SYNC ---
         audio.ontimeupdate = () => {
             if (!audio.duration) return;
             document.getElementById('progress-fill').style.width = ((audio.currentTime / audio.duration) * 100) + '%';
@@ -431,7 +553,7 @@
             audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
         };
 
-        // --- 6. NAVIGATION (Shuffle/Repeat) ---
+        // --- 7. NAVIGATION (Shuffle/Repeat) ---
         const shuffleBtn = document.getElementById('shuffle-btn');
         const repeatBtn = document.getElementById('repeat-btn');
         shuffleBtn.onclick = () => { isShuffle = !isShuffle; shuffleBtn.classList.toggle('active'); };
@@ -453,7 +575,7 @@
             else playSong((currentSongIndex - 1) < 0 ? songList.length - 1 : currentSongIndex - 1);
         };
 
-        // --- 7. VOLUME QOL ---
+        // --- 8. VOLUME QOL ---
         const volumeIcon = document.getElementById('volume-icon');
         const volumeSlider = document.getElementById('volume-slider');
         function setVolume(value) {
@@ -467,7 +589,7 @@
         volumeSlider.addEventListener('input', (e) => setVolume(e.target.value));
         setVolume(audio.volume);
 
-        // --- 8. MINI PLAYER (PiP) ---
+        // --- 9. MINI PLAYER (PiP) ---
         document.getElementById('pip-btn').onclick = async () => {
             if (!('documentPictureInPicture' in window)) return alert('Not supported in your browser.');
             if (miniPlayerWindow) return; 
@@ -502,7 +624,7 @@
             miniPlayerWindow.document.getElementById('pip-play').innerHTML = audio.paused ? '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
         }
 
-        // --- 9. VIEW TOGGLES & WIKIPEDIA BIO ---
+        // --- 10. VIEW TOGGLES & WIKIPEDIA BIO ---
         const navHome = document.getElementById('nav-home');
         const lyricsToggleBtn = document.getElementById('lyrics-toggle-btn');
         const theaterBtn = document.getElementById('theater-toggle-btn');

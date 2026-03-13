@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AudioStream Pro - Master Build w/ Auth</title>
+    <title>AudioStream Pro - Master Build</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -35,12 +35,10 @@
             overflow: hidden; user-select: none; transition: grid-template-columns 0.4s ease;
         }
 
-        /* THEATER MODE OVERRIDES */
         body.theater-mode { grid-template-columns: 0px 1fr; }
         body.theater-mode .sidebar { opacity: 0; pointer-events: none; }
         body.theater-mode .main-container { border-radius: 0; }
 
-        /* --- SIDEBAR --- */
         .sidebar { grid-column: 1 / 2; grid-row: 1 / 2; display: flex; flex-direction: column; align-items: center; padding: 24px 0; gap: 32px; transition: opacity 0.3s ease; height: 100%; }
         .sidebar-icon { width: 24px; height: 24px; fill: var(--text-subdued); cursor: pointer; transition: 0.2s; }
         .sidebar-icon:hover, .sidebar-icon.active { fill: var(--text-base); }
@@ -49,20 +47,16 @@
         .sidebar-profile:hover { opacity: 1; transform: scale(1.1); }
         .sidebar-profile.logged-in { fill: var(--accent); opacity: 1; }
 
-        /* --- MAIN VIEW CONTAINER --- */
         .main-container { grid-column: 2 / 3; grid-row: 1 / 2; background-color: var(--bg-main); border-radius: 8px 0 0 0; overflow: hidden; position: relative; transition: border-radius 0.4s ease;}
 
-        /* --- TOP NAV --- */
         .top-nav { display: flex; justify-content: center; padding: 24px 32px; position: absolute; top: 0; left: 0; right: 0; z-index: 20; background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%); }
         .search-container { display: flex; align-items: center; background-color: var(--bg-elevated); border-radius: 500px; padding: 0 12px; width: 364px; }
         .search-icon { width: 20px; height: 20px; fill: var(--text-subdued); margin-right: 8px; }
         .search-bar { background: transparent; border: none; color: var(--text-base); width: 100%; height: 48px; font-size: 14px; outline: none; }
 
-        /* --- VIEWS --- */
         .view-section { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 100px 32px 32px 32px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .view-section.active-view { opacity: 1; pointer-events: auto; }
 
-        /* HOME VIEW */
         #home-view { background: linear-gradient(180deg, var(--dynamic-bg-light) 0%, rgba(18,18,18,1) 300px); }
         .hero { text-align: center; margin-bottom: 48px; }
         .hero h1 { font-size: 56px; font-weight: 800; margin: 0 0 16px 0; }
@@ -72,7 +66,6 @@
         .song-item:hover { background-color: rgba(255,255,255,0.1); }
         .song-item.active-song .song-title { color: var(--accent); }
         
-        /* VISUALIZER */
         .playing-visualizer { display: none; width: 14px; height: 14px; justify-content: space-between; align-items: flex-end; margin: 0 auto; }
         .song-item.active-song .playing-visualizer { display: flex; }
         .song-item.active-song .song-index { display: none; }
@@ -87,7 +80,6 @@
         .song-title { font-weight: 500; font-size: 16px; margin-bottom: 4px; }
         .song-artist { font-size: 14px; color: var(--text-subdued); }
 
-        /* LYRICS VIEW */
         #lyrics-view { background-color: var(--dynamic-bg-dark); transition: background-color 0.8s ease; display: flex; flex-direction: column; align-items: center; position: relative; }
         .lyrics-container { max-width: 800px; width: 100%; padding-top: 40px; padding-bottom: 300px; }
         .lyric-line { font-size: 32px; font-weight: 700; color: #000; opacity: 0.5; margin-bottom: 24px; transition: 0.3s ease; cursor: pointer; text-align: center;}
@@ -95,11 +87,9 @@
         .lyric-line.active-lyric { color: #fff; opacity: 1; font-size: 36px; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
         .lyric-section { font-size: 16px; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; margin-top: 48px; margin-bottom: 16px; font-weight: 800; cursor: default; text-align: center;}
 
-        /* RESUME SYNC BUTTON */
         #resume-sync-btn { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background-color: var(--text-base); color: #000; padding: 8px 24px; border-radius: 500px; font-weight: 700; font-size: 14px; cursor: pointer; opacity: 0; pointer-events: none; transition: 0.3s ease; z-index: 50; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
         #resume-sync-btn:hover { transform: translateX(-50%) scale(1.05); }
 
-        /* --- MODALS (ARTIST BIO & AUTH) --- */
         #bio-modal { position: absolute; bottom: -100%; left: 16px; width: 400px; max-height: 60%; background: var(--bg-elevated); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 50; padding: 24px; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow-y: auto; }
         #bio-modal.open { bottom: 100px; }
         .bio-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
@@ -120,7 +110,6 @@
         .auth-close-btn { background: transparent; border: none; color: var(--text-subdued); cursor: pointer; margin-top: 8px; transition: 0.2s;}
         .auth-close-btn:hover { color: white; }
 
-        /* --- PLAYER BAR --- */
         .player-bar { grid-column: 1 / 3; grid-row: 2 / 3; background-color: var(--bg-base); border-top: 1px solid #282828; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 60; }
         .track-info { width: 30%; min-width: 180px; display: flex; align-items: center; gap: 14px; }
         .album-art { width: 56px; height: 56px; border-radius: 4px; background-color: #282828; background-size: cover; background-position: center; transition: 0.3s ease;}
@@ -157,7 +146,6 @@
 
     <div class="sidebar">
         <svg class="sidebar-icon active" id="nav-home" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        
         <div class="sidebar-profile" id="auth-trigger-btn" title="Log In">
             <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
         </div>
@@ -249,9 +237,9 @@
     <audio id="audio-player"></audio>
 
     <script>
-        // --- GLOBALS & SUPABASE SETUP ---
-        const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkZWJ5amZraWphZXJ0dGh6anVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTU4NjgsImV4cCI6MjA4ODczMTg2OH0.QPPyLb7SbY7ChzwDejlGC9dqqX0nEGiFHND402pqEDo';
+        // YOUR REAL KEYS
         const supabaseUrl = 'https://xdebyjfkijaertthzjup.supabase.co';
+        const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkZWJ5amZraWphZXJ0dGh6anVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTU4NjgsImV4cCI6MjA4ODczMTg2OH0.QPPyLb7SbY7ChzwDejlGC9dqqX0nEGiFHND402pqEDo';
         
         // Initialize Supabase SDK
         const supabase = window.supabase.createClient(supabaseUrl, anonKey);
@@ -295,7 +283,6 @@
         const authTitle = document.getElementById('auth-title');
         const authError = document.getElementById('auth-error');
 
-        // Check if already logged in on load
         async function checkSession() {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
@@ -362,16 +349,21 @@
             authSubmit.innerText = isSignUpMode ? "Sign Up" : "Log In";
         };
 
-        // --- 2. FETCH & MEMORY (Updated to use SDK) ---
+        // --- 2. FETCH & MEMORY ---
         async function fetchSongs() {
             try {
+                // If it fails here, you still need to run the RLS query in Supabase
                 const { data, error } = await supabase.from('songs').select('*');
                 if (error) throw error;
                 
+                if (!data || data.length === 0) {
+                    songListContainer.innerHTML = '<div style="padding:16px;">Database connected, but no songs found. Add some to your "songs" table!</div>';
+                    return;
+                }
+
                 songList = data;
                 renderList(songList);
                 
-                // Playback Memory Load
                 const savedIndex = localStorage.getItem('savedSongIndex');
                 const savedTime = localStorage.getItem('savedSongTime');
                 
@@ -386,7 +378,10 @@
                         });
                     }
                 }
-            } catch (err) { console.error("Error fetching songs:", err); }
+            } catch (err) { 
+                console.error("Error fetching songs:", err); 
+                songListContainer.innerHTML = `<div style="padding:16px; color:#ff4444;">Error: ${err.message}. Did you enable Row Level Security (RLS) policies?</div>`;
+            }
         }
 
         function renderList(listToRender) {
@@ -432,7 +427,6 @@
             localStorage.setItem('savedSongIndex', currentSongIndex);
             updateMiniPlayerState(song);
 
-            // Lyrics Logic
             userIsScrollingLyrics = false;
             resumeSyncBtn.style.opacity = '0'; resumeSyncBtn.style.pointerEvents = 'none';
             lyricsContainer.innerHTML = '<div class="lyric-line">Searching for lyrics...</div>';
@@ -589,42 +583,7 @@
         volumeSlider.addEventListener('input', (e) => setVolume(e.target.value));
         setVolume(audio.volume);
 
-        // --- 9. MINI PLAYER (PiP) ---
-        document.getElementById('pip-btn').onclick = async () => {
-            if (!('documentPictureInPicture' in window)) return alert('Not supported in your browser.');
-            if (miniPlayerWindow) return; 
-            try {
-                miniPlayerWindow = await documentPictureInPicture.requestWindow({ width: 320, height: 380 });
-                const style = miniPlayerWindow.document.createElement('style');
-                style.textContent = `body { margin: 0; background: #121212; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; } img { width: 200px; height: 200px; border-radius: 8px; margin-bottom: 20px; object-fit: cover; box-shadow: 0 8px 24px rgba(0,0,0,0.5); } .title { font-weight: bold; font-size: 18px; margin-bottom: 4px; padding: 0 16px; width: 100%;} .artist { font-size: 14px; color: #b3b3b3; margin-bottom: 24px;} .controls { display: flex; gap: 32px; align-items: center; } button { background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; padding: 0; transition: 0.2s;} button:hover { color: #1DB954; transform: scale(1.1); } svg { width: 28px; height: 28px; fill: currentColor; } .play-btn svg { width: 40px; height: 40px; }`;
-                miniPlayerWindow.document.head.appendChild(style);
-
-                const song = songList[currentSongIndex];
-                const container = miniPlayerWindow.document.createElement('div');
-                container.innerHTML = `<img src="${song?.cover_url || ''}" id="pip-art" style="display: ${song?.cover_url ? 'block' : 'none'};"/> <div class="title" id="pip-title">${song?.title || 'No track'}</div> <div class="artist" id="pip-artist">${song?.artist || ''}</div> <div class="controls"><button id="pip-prev"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button><button id="pip-play" class="play-btn">${audio.paused ? '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'}</button><button id="pip-next"><svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button></div>`;
-                miniPlayerWindow.document.body.appendChild(container);
-
-                miniPlayerWindow.document.getElementById('pip-play').onclick = togglePlay;
-                miniPlayerWindow.document.getElementById('pip-prev').onclick = () => document.getElementById('prev-btn').click();
-                miniPlayerWindow.document.getElementById('pip-next').onclick = playNext;
-                miniPlayerWindow.addEventListener("pagehide", () => miniPlayerWindow = null);
-            } catch(e) { console.error(e); }
-        };
-
-        function updateMiniPlayerState(song) {
-            if (!miniPlayerWindow) return;
-            const imgEl = miniPlayerWindow.document.getElementById('pip-art');
-            if(song.cover_url) { imgEl.src = song.cover_url; imgEl.style.display = 'block'; } else imgEl.style.display = 'none';
-            miniPlayerWindow.document.getElementById('pip-title').innerText = song.title;
-            miniPlayerWindow.document.getElementById('pip-artist').innerText = song.artist;
-            updateMiniPlayerPlayState();
-        }
-        function updateMiniPlayerPlayState() {
-            if (!miniPlayerWindow) return;
-            miniPlayerWindow.document.getElementById('pip-play').innerHTML = audio.paused ? '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
-        }
-
-        // --- 10. VIEW TOGGLES & WIKIPEDIA BIO ---
+        // --- 9. VIEW TOGGLES & WIKIPEDIA BIO ---
         const navHome = document.getElementById('nav-home');
         const lyricsToggleBtn = document.getElementById('lyrics-toggle-btn');
         const theaterBtn = document.getElementById('theater-toggle-btn');
@@ -655,7 +614,6 @@
         };
         document.getElementById('close-bio').onclick = () => bioModal.classList.remove('open');
 
-        // Utils
         function formatTime(s) { if(isNaN(s)) return "0:00"; let m = Math.floor(s/60); let secs = Math.floor(s%60); return m+":"+(secs<10?"0"+secs:secs); }
         audio.onloadedmetadata = () => document.getElementById('time-total').innerText = formatTime(audio.duration);
 

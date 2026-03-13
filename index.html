@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AudioStream Pro</title>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js" onerror="document.body.innerHTML='<h1 style=\'color:red; background:black; padding:40px;\'>🔥 BLOCKED BY SCHOOL: ColorThief (cdnjs) could not load.</h1>'"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="document.body.innerHTML='<h1 style=\'color:red; background:black; padding:40px;\'>🔥 BLOCKED BY SCHOOL: Supabase (jsDelivr) could not load.</h1>'"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.0/color-thief.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -163,18 +163,47 @@
     </div>
 
     <div class="player-bar" id="player-bar">
+        <div class="track-info">
+            <div class="album-art" id="np-art"></div>
+            <div class="np-text">
+                <div id="np-title">No track selected</div>
+                <div id="np-artist"></div> 
+            </div>
         </div>
+        
+        <div class="player-center">
+            <div class="control-buttons">
+                <svg class="btn-icon" id="prev-btn" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                <div class="play-btn" id="play-pause-btn">
+                    <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="pause-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </div>
+                <svg class="btn-icon" id="next-btn" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </div>
+            <div class="progress-container">
+                <span id="time-current">0:00</span>
+                <div class="progress-bar-bg" id="progress-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+                <span id="time-total">0:00</span>
+            </div>
+        </div>
+
+        <div class="volume-controls">
+            <svg class="btn-icon" id="queue-toggle-btn" viewBox="0 0 24 24" title="Up Next Queue"><path d="M3 15h18v-2H3v2zm0 4h18v-2H3v2zm0-8h18V9H3v2zm0-6v2h18V5H3z"/></svg>
+            <svg class="btn-icon" id="pip-toggle-btn" viewBox="0 0 24 24" title="Mini Player"><path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16.01H3V4.98h18v14.03z"/></svg>
+            <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.01">
+        </div>
+    </div>
 
     <audio id="audio-player"></audio>
 
     <script>
         // MASTER FAIL-SAFE WRAPPER
         try {
-            document.getElementById('song-list-container').innerHTML = "Script is running... checking dependencies...";
+            const listContainer = document.getElementById('song-list-container');
+            if(listContainer) listContainer.innerHTML = "Script is running... checking dependencies...";
 
-            // 1. Verify Supabase loaded
             if (typeof window.supabase === 'undefined') {
-                throw new Error("The Supabase library failed to load entirely. The school is blocking jsdelivr.net.");
+                throw new Error("Supabase library failed to load entirely. The school is blocking jsdelivr.net.");
             }
 
             const supabaseUrl = 'https://xdebyjfkijaertthzjup.supabase.co';
@@ -184,45 +213,56 @@
             let songList = [];
             let currentSongIndex = -1;
             let isGridView = false;
-            const audio = document.getElementById('audio-player');
+            const audio = document.getElementById('audio-player') || new Audio();
             
-            // 2. Verify ColorThief loaded safely
             let colorThief = null;
             if (typeof ColorThief !== 'undefined') {
                 colorThief = new ColorThief();
-            } else {
-                console.warn("ColorThief blocked, but we will run without it.");
             }
 
-            document.getElementById('view-toggle-btn').onclick = () => {
-                isGridView = !isGridView;
-                document.getElementById('song-list-container').classList.toggle('grid-mode');
-                document.getElementById('list-header').style.display = isGridView ? 'none' : 'grid';
-                document.getElementById('view-toggle-btn').innerText = isGridView ? "Switch to List View" : "Switch to Grid View";
-            };
+            // SAFELY BIND BUTTONS (Ignores missing buttons if you are using custom UI)
+            const viewToggleBtn = document.getElementById('view-toggle-btn');
+            if (viewToggleBtn) {
+                viewToggleBtn.onclick = () => {
+                    isGridView = !isGridView;
+                    const container = document.getElementById('song-list-container');
+                    const header = document.getElementById('list-header');
+                    if(container) container.classList.toggle('grid-mode');
+                    if(header) header.style.display = isGridView ? 'none' : 'grid';
+                    viewToggleBtn.innerText = isGridView ? "Switch to List View" : "Switch to Grid View";
+                };
+            }
 
-            document.getElementById('queue-toggle-btn').onclick = () => {
-                document.body.classList.toggle('queue-open');
-                document.getElementById('queue-toggle-btn').classList.toggle('active');
-            };
+            const queueToggleBtn = document.getElementById('queue-toggle-btn');
+            if (queueToggleBtn) {
+                queueToggleBtn.onclick = () => {
+                    document.body.classList.toggle('queue-open');
+                    queueToggleBtn.classList.toggle('active');
+                };
+            }
 
-            document.getElementById('pip-toggle-btn').onclick = () => {
-                document.body.classList.toggle('mini-player-mode');
-                document.getElementById('pip-toggle-btn').classList.toggle('active');
-            };
+            const pipToggleBtn = document.getElementById('pip-toggle-btn');
+            if (pipToggleBtn) {
+                pipToggleBtn.onclick = () => {
+                    document.body.classList.toggle('mini-player-mode');
+                    pipToggleBtn.classList.toggle('active');
+                };
+            }
 
             async function fetchSongs() {
                 try {
-                    document.getElementById('song-list-container').innerHTML = "Talking to Supabase database...";
+                    const container = document.getElementById('song-list-container');
+                    if(container) container.innerHTML = "Talking to Supabase database...";
+                    
                     const { data, error } = await supabase.from('songs').select('*');
                     
                     if (error) {
-                        document.getElementById('song-list-container').innerHTML = `<div style="color:#ff4444; padding:20px;"><b>SUPABASE ERROR:</b> ${error.message || JSON.stringify(error)}</div>`;
+                        if(container) container.innerHTML = `<div style="color:#ff4444; padding:20px;"><b>SUPABASE ERROR:</b> ${error.message || JSON.stringify(error)}</div>`;
                         return;
                     }
                     
                     if (!data || data.length === 0) {
-                        document.getElementById('song-list-container').innerHTML = `<div style="padding:20px; color:white;"><b>Database connected perfectly</b>, but 0 songs were returned. RLS Policy is still blocking the Anon user.</div>`;
+                        if(container) container.innerHTML = `<div style="padding:20px; color:white;"><b>Database connected perfectly</b>, but 0 songs were returned. RLS Policy is still blocking the Anon user.</div>`;
                         return;
                     }
                     
@@ -230,12 +270,14 @@
                     renderList(songList);
 
                 } catch (err) {
-                    document.getElementById('song-list-container').innerHTML = `<div style="color:#ff4444; padding:20px;"><b>NETWORK/FETCH ERROR:</b> ${err.message}</div>`;
+                    const container = document.getElementById('song-list-container');
+                    if(container) container.innerHTML = `<div style="color:#ff4444; padding:20px;"><b>NETWORK/FETCH ERROR:</b> ${err.message}</div>`;
                 }
             }
 
             function renderList(list) {
                 const container = document.getElementById('song-list-container');
+                if (!container) return;
                 container.innerHTML = ''; 
                 list.forEach((song, i) => {
                     const div = document.createElement('div');
@@ -259,15 +301,142 @@
                 });
             }
 
-            // ... Keep all audio playing functions the exact same ...
-            // Truncated here in explanation to save space, but ALL functions from the previous code block go here naturally
+            function renderQueue() {
+                const queueList = document.getElementById('queue-list');
+                if (!queueList) return;
+                queueList.innerHTML = '';
+                const nextSongs = songList.slice(currentSongIndex + 1);
+                
+                if (nextSongs.length === 0) {
+                    queueList.innerHTML = '<div style="color:var(--text-subdued); font-size:14px;">End of queue.</div>';
+                    return;
+                }
+
+                nextSongs.forEach((song) => {
+                    const div = document.createElement('div');
+                    div.className = 'queue-item';
+                    div.innerHTML = `
+                        <img src="${song.cover_url || ''}">
+                        <div class="queue-item-info">
+                            <span class="queue-item-title">${song.title}</span>
+                            <span>${song.artist}</span>
+                        </div>
+                    `;
+                    queueList.appendChild(div);
+                });
+            }
+
+            function playSong(index) {
+                document.querySelectorAll('.song-item').forEach(el => el.classList.remove('active-song'));
+                currentSongIndex = index;
+                const song = songList[index];
+                const activeRow = document.getElementById(`song-${index}`);
+                if (activeRow) activeRow.classList.add('active-song');
+                
+                const npTitle = document.getElementById('np-title');
+                const npArtist = document.getElementById('np-artist');
+                const npArt = document.getElementById('np-art');
+                
+                if(npTitle) npTitle.innerText = song.title; 
+                if(npArtist) npArtist.innerText = song.artist; 
+                
+                if (song.cover_url && npArt) {
+                    npArt.style.backgroundImage = `url('${song.cover_url}')`;
+                    if (colorThief) {
+                        const img = new Image(); img.crossOrigin = 'Anonymous'; img.src = song.cover_url;
+                        img.onload = () => { try {
+                            const c = colorThief.getColor(img);
+                            document.documentElement.style.setProperty('--dynamic-bg-light', `rgba(${c[0]}, ${c[1]}, ${c[2]}, 0.4)`);
+                        } catch(e){} };
+                    }
+                }
+
+                audio.src = song.audio_url;
+                audio.play();
+                
+                const playIcon = document.getElementById('play-icon');
+                const pauseIcon = document.getElementById('pause-icon');
+                if(playIcon) playIcon.style.display = 'none';
+                if(pauseIcon) pauseIcon.style.display = 'block';
+                
+                renderQueue();
+            }
+
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            if(playPauseBtn) {
+                playPauseBtn.onclick = () => {
+                    if (!audio.src) return;
+                    const playIcon = document.getElementById('play-icon');
+                    const pauseIcon = document.getElementById('pause-icon');
+                    
+                    if (audio.paused) { 
+                        audio.play(); 
+                        if(playIcon) playIcon.style.display = 'none'; 
+                        if(pauseIcon) pauseIcon.style.display = 'block'; 
+                    } else { 
+                        audio.pause(); 
+                        if(pauseIcon) pauseIcon.style.display = 'none'; 
+                        if(playIcon) playIcon.style.display = 'block'; 
+                    }
+                };
+            }
+
+            function playNext() {
+                if (currentSongIndex + 1 < songList.length) playSong(currentSongIndex + 1);
+            }
             
+            const nextBtn = document.getElementById('next-btn');
+            if(nextBtn) nextBtn.onclick = playNext;
+            
+            const prevBtn = document.getElementById('prev-btn');
+            if(prevBtn) {
+                prevBtn.onclick = () => {
+                    if (audio.currentTime > 3) audio.currentTime = 0; 
+                    else if (currentSongIndex > 0) playSong(currentSongIndex - 1);
+                };
+            }
+            
+            audio.onended = playNext;
+
+            function formatTime(s) { if(isNaN(s)) return "0:00"; let m = Math.floor(s/60); let secs = Math.floor(s%60); return m+":"+(secs<10?"0"+secs:secs); }
+
+            audio.ontimeupdate = () => {
+                if (!audio.duration) return;
+                const fill = document.getElementById('progress-fill');
+                const currTime = document.getElementById('time-current');
+                if(fill) fill.style.width = ((audio.currentTime / audio.duration) * 100) + '%';
+                if(currTime) currTime.innerText = formatTime(audio.currentTime);
+            };
+
+            const progressBg = document.getElementById('progress-bg');
+            if(progressBg) {
+                progressBg.onclick = (e) => {
+                    if (!audio.duration) return;
+                    const rect = progressBg.getBoundingClientRect();
+                    audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
+                };
+            }
+
+            const volSlider = document.getElementById('volume-slider');
+            if(volSlider) {
+                volSlider.addEventListener('input', (e) => { audio.volume = e.target.value; });
+            }
+
+            audio.onloadedmetadata = () => {
+                const totalTime = document.getElementById('time-total');
+                if(totalTime) totalTime.innerText = formatTime(audio.duration);
+            }
+
             // Kick off the load
             fetchSongs();
 
         } catch (masterError) {
-            // IF ANYTHING AT ALL BREAKS BEFORE FETCHING, IT PRINTS HERE
-            document.getElementById('song-list-container').innerHTML = `<div style="color:#ff4444; padding:20px;"><b>FATAL JAVASCRIPT CRASH:</b><br><br>${masterError.message}</div>`;
+            const container = document.getElementById('song-list-container');
+            if(container) {
+                container.innerHTML = `<div style="color:#ff4444; padding:20px;"><b>FATAL JAVASCRIPT CRASH:</b><br><br>${masterError.message}</div>`;
+            } else {
+                console.error("Crash:", masterError.message);
+            }
         }
     </script>
 </body>

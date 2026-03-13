@@ -70,31 +70,33 @@
         .search-container { display: flex; align-items: center; background-color: var(--bg-elevated); border-radius: 500px; padding: 0 12px; width: 364px; }
         .search-icon { width: 20px; height: 20px; fill: var(--text-subdued); margin-right: 8px; }
         .search-bar { background: transparent; border: none; color: var(--text-base); width: 100%; height: 48px; outline: none; }
-        .view-toggle-btn { background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.2s; }
+        .view-toggle-btn { background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-size: 12px; font-weight: 600;}
         .view-toggle-btn:hover { background: #333; }
-        .reset-btn { background: rgba(200,0,0,0.6); border: 1px solid #ff4444; color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.2s; margin-left: 10px;}
-        .reset-btn:hover { background: red; }
 
         .view-section { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 100px 32px 32px 32px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .view-section.active-view { opacity: 1; pointer-events: auto; }
 
         #home-view { background: linear-gradient(180deg, var(--dynamic-bg-light) 0%, rgba(18,18,18,1) 300px); }
         
-        /* --- List View (Default) --- */
-        .track-list-header { display: grid; grid-template-columns: 48px 1fr; padding: 0 16px 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-subdued); font-size: 12px; text-transform: uppercase; margin-bottom: 16px; }
+        /* --- List View --- */
+        .track-list-header { display: grid; grid-template-columns: 48px 1fr 60px; padding: 0 16px 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-subdued); font-size: 12px; text-transform: uppercase; margin-bottom: 16px; letter-spacing: 1px;}
         #song-list-container { display: flex; flex-direction: column; gap: 4px; }
-        .song-item { display: grid; grid-template-columns: 48px 1fr; align-items: center; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .song-item { display: grid; grid-template-columns: 48px 1fr 60px; align-items: center; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
         .song-item:hover { background-color: rgba(255,255,255,0.1); }
         .song-item.active-song .song-title { color: var(--accent); }
         .song-item img { display: none; } 
-        .song-info-container { display: flex; align-items: center; gap: 8px; }
+        .song-info-container { display: flex; align-items: center; gap: 12px; }
+        .song-duration-text { color: var(--text-subdued); font-size: 14px; text-align: right; font-variant-numeric: tabular-nums;}
         
+        /* NEW: Class to hide songs during search */
+        .hidden-song { display: none !important; }
+
         /* --- Grid View --- */
         #song-list-container.grid-mode { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 24px; }
         .grid-mode .song-item { display: flex; flex-direction: column; align-items: flex-start; padding: 16px; background: #181818; border-radius: 8px; }
         .grid-mode .song-item:hover { background: #282828; transform: translateY(-4px); }
-        .grid-mode .song-item img { display: block; width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 4px; margin-bottom: 16px; background: #333; }
-        .grid-mode .song-index, .grid-mode .playing-visualizer { display: none !important; }
+        .grid-mode .song-item img { display: block; width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 4px; margin-bottom: 16px; background: #333; box-shadow: 0 8px 24px rgba(0,0,0,0.5);}
+        .grid-mode .song-index, .grid-mode .playing-visualizer, .grid-mode .song-duration-text { display: none !important; }
         .grid-mode .song-title { font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%;}
         
         .playing-visualizer { display: none; width: 14px; height: 14px; justify-content: space-between; align-items: flex-end; margin: 0 auto; }
@@ -110,24 +112,31 @@
         .player-bar { grid-column: 1 / 4; grid-row: 2 / 3; background-color: var(--bg-base); border-top: 1px solid #282828; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 60; transition: 0.3s ease; }
         .track-info { width: 30%; min-width: 180px; display: flex; align-items: center; gap: 14px; }
         .album-art { width: 56px; height: 56px; border-radius: 4px; background-color: #282828; background-size: cover; background-position: center; }
-        .np-text { display: flex; flex-direction: column; justify-content: center; }
+        .np-text { display: flex; flex-direction: column; justify-content: center; margin-right: 12px;}
         #np-title { font-size: 14px; font-weight: 600; }
         #np-artist { font-size: 12px; color: var(--text-subdued); }
+        .heart-btn { width: 16px; height: 16px; fill: var(--text-subdued); cursor: pointer; transition: 0.2s; }
+        .heart-btn:hover { fill: var(--text-base); }
+        .heart-btn.liked { fill: var(--accent); }
 
         .player-center { width: 40%; max-width: 722px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
         .control-buttons { display: flex; align-items: center; gap: 24px; }
         .btn-icon { width: 16px; height: 16px; fill: var(--text-subdued); cursor: pointer; transition: 0.2s; }
-        .btn-icon:hover, .btn-icon.active { fill: var(--accent); }
-        .play-btn { width: 32px; height: 32px; border-radius: 50%; background-color: var(--text-base); display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .btn-icon:hover, .btn-icon.active { fill: var(--text-base); }
+        .btn-icon.accent-active { fill: var(--accent); }
+        .play-btn { width: 32px; height: 32px; border-radius: 50%; background-color: var(--text-base); display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s;}
+        .play-btn:hover { transform: scale(1.05); background-color: #fff;}
         .play-btn svg { width: 16px; height: 16px; fill: #000; }
         #pause-icon { display: none; }
         
-        .progress-container { width: 100%; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-subdued); }
-        .progress-bar-bg { flex: 1; height: 4px; background-color: #4D4D4D; border-radius: 2px; cursor: pointer; }
+        .progress-container { width: 100%; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-subdued); font-variant-numeric: tabular-nums;}
+        .progress-bar-bg { flex: 1; height: 4px; background-color: #4D4D4D; border-radius: 2px; cursor: pointer; transition: 0.2s;}
+        .progress-bar-bg:hover .progress-bar-fill { background-color: var(--accent); }
         .progress-bar-fill { height: 100%; background-color: var(--text-base); border-radius: 2px; width: 0%; pointer-events: none; }
 
         .volume-controls { width: 30%; min-width: 250px; display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
-        .volume-slider { width: 93px; }
+        .volume-slider { width: 93px; accent-color: var(--text-base); cursor: pointer;}
+        .volume-slider:hover { accent-color: var(--accent); }
         
         audio { display: none; }
     </style>
@@ -146,14 +155,19 @@
             </div>
             <div>
                 <button id="view-toggle-btn" class="view-toggle-btn">Switch to Grid View</button>
-                <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.href=window.location.href.split('?')[0]+'?v='+new Date().getTime();" class="reset-btn">Reset App</button>
             </div>
         </div>
 
         <div id="home-view" class="view-section active-view">
             <br><br><br>
-            <div class="track-list-header" id="list-header"><div style="text-align:center">#</div><div>Title</div></div>
-            <div id="song-list-container">Starting up Javascript...</div>
+            <div class="track-list-header" id="list-header">
+                <div style="text-align:center">#</div>
+                <div>Title</div>
+                <div style="text-align: right;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="opacity: 0.7;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                </div>
+            </div>
+            <div id="song-list-container">Loading your library...</div>
         </div>
     </div>
 
@@ -169,16 +183,19 @@
                 <div id="np-title">No track selected</div>
                 <div id="np-artist"></div> 
             </div>
+            <svg class="heart-btn" id="like-btn" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
         </div>
         
         <div class="player-center">
             <div class="control-buttons">
+                <svg class="btn-icon" id="shuffle-btn" viewBox="0 0 24 24" title="Shuffle"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
                 <svg class="btn-icon" id="prev-btn" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
                 <div class="play-btn" id="play-pause-btn">
                     <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                     <svg id="pause-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                 </div>
                 <svg class="btn-icon" id="next-btn" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                <svg class="btn-icon" id="repeat-btn" viewBox="0 0 24 24" title="Repeat"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
             </div>
             <div class="progress-container">
                 <span id="time-current">0:00</span>
@@ -197,13 +214,9 @@
     <audio id="audio-player"></audio>
 
     <script>
-        // MASTER FAIL-SAFE WRAPPER
         try {
-            const listContainer = document.getElementById('song-list-container');
-            if(listContainer) listContainer.innerHTML = "Script is running... checking dependencies...";
-
             if (typeof window.supabase === 'undefined') {
-                throw new Error("Supabase library failed to load entirely. The school is blocking jsdelivr.net.");
+                throw new Error("Supabase library failed to load entirely.");
             }
 
             const supabaseUrl = 'https://xdebyjfkijaertthzjup.supabase.co';
@@ -213,6 +226,8 @@
             let songList = [];
             let currentSongIndex = -1;
             let isGridView = false;
+            let isShuffle = false;
+            let isRepeat = false;
             const audio = document.getElementById('audio-player') || new Audio();
             
             let colorThief = null;
@@ -220,7 +235,7 @@
                 colorThief = new ColorThief();
             }
 
-            // SAFELY BIND BUTTONS (Ignores missing buttons if you are using custom UI)
+            // --- UI TOGGLES ---
             const viewToggleBtn = document.getElementById('view-toggle-btn');
             if (viewToggleBtn) {
                 viewToggleBtn.onclick = () => {
@@ -234,44 +249,80 @@
             }
 
             const queueToggleBtn = document.getElementById('queue-toggle-btn');
-            if (queueToggleBtn) {
-                queueToggleBtn.onclick = () => {
-                    document.body.classList.toggle('queue-open');
-                    queueToggleBtn.classList.toggle('active');
-                };
-            }
+            if (queueToggleBtn) queueToggleBtn.onclick = () => { document.body.classList.toggle('queue-open'); queueToggleBtn.classList.toggle('active'); };
 
             const pipToggleBtn = document.getElementById('pip-toggle-btn');
-            if (pipToggleBtn) {
-                pipToggleBtn.onclick = () => {
-                    document.body.classList.toggle('mini-player-mode');
-                    pipToggleBtn.classList.toggle('active');
+            if (pipToggleBtn) pipToggleBtn.onclick = () => { document.body.classList.toggle('mini-player-mode'); pipToggleBtn.classList.toggle('active'); };
+            
+            const likeBtn = document.getElementById('like-btn');
+            if(likeBtn) likeBtn.onclick = () => likeBtn.classList.toggle('liked');
+            
+            // --- SHUFFLE & REPEAT LOGIC ---
+            const shuffleBtn = document.getElementById('shuffle-btn');
+            if(shuffleBtn) {
+                shuffleBtn.onclick = () => {
+                    isShuffle = !isShuffle;
+                    shuffleBtn.classList.toggle('accent-active', isShuffle);
+                    renderQueue(); // Update queue display immediately when toggled
+                };
+            }
+            
+            const repeatBtn = document.getElementById('repeat-btn');
+            if(repeatBtn) {
+                repeatBtn.onclick = () => {
+                    isRepeat = !isRepeat;
+                    repeatBtn.classList.toggle('accent-active', isRepeat);
                 };
             }
 
+            // --- SEARCH FILTER LOGIC ---
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const allSongs = document.querySelectorAll('.song-item');
+                    
+                    allSongs.forEach(item => {
+                        const title = item.querySelector('.song-title').innerText.toLowerCase();
+                        const artist = item.querySelector('.song-artist').innerText.toLowerCase();
+                        
+                        if (title.includes(searchTerm) || artist.includes(searchTerm)) {
+                            item.classList.remove('hidden-song');
+                        } else {
+                            item.classList.add('hidden-song');
+                        }
+                    });
+                });
+            }
+
+            // --- VOLUME MEMORY LOGIC ---
+            const volSlider = document.getElementById('volume-slider');
+            if(volSlider) {
+                const savedVol = localStorage.getItem('audioStream_volume');
+                if (savedVol !== null) {
+                    audio.volume = parseFloat(savedVol);
+                    volSlider.value = savedVol;
+                } else {
+                    audio.volume = 1;
+                    volSlider.value = 1;
+                }
+
+                volSlider.addEventListener('input', (e) => { 
+                    audio.volume = e.target.value; 
+                    localStorage.setItem('audioStream_volume', e.target.value);
+                });
+            }
+
+            // --- FETCH & RENDER ---
             async function fetchSongs() {
                 try {
-                    const container = document.getElementById('song-list-container');
-                    if(container) container.innerHTML = "Talking to Supabase database...";
-                    
                     const { data, error } = await supabase.from('songs').select('*');
-                    
-                    if (error) {
-                        if(container) container.innerHTML = `<div style="color:#ff4444; padding:20px;"><b>SUPABASE ERROR:</b> ${error.message || JSON.stringify(error)}</div>`;
-                        return;
-                    }
-                    
-                    if (!data || data.length === 0) {
-                        if(container) container.innerHTML = `<div style="padding:20px; color:white;"><b>Database connected perfectly</b>, but 0 songs were returned. RLS Policy is still blocking the Anon user.</div>`;
-                        return;
-                    }
-                    
+                    if (error) throw error;
+                    if (!data || data.length === 0) return;
                     songList = data;
                     renderList(songList);
-
                 } catch (err) {
-                    const container = document.getElementById('song-list-container');
-                    if(container) container.innerHTML = `<div style="color:#ff4444; padding:20px;"><b>NETWORK/FETCH ERROR:</b> ${err.message}</div>`;
+                    console.error("Fetch Error:", err);
                 }
             }
 
@@ -283,6 +334,9 @@
                     const div = document.createElement('div');
                     div.className = `song-item ${i === currentSongIndex ? 'active-song' : ''}`;
                     div.id = `song-${i}`;
+                    
+                    const durationDisplay = song.duration ? song.duration : '--:--';
+
                     div.innerHTML = `
                         <div style="text-align: center; width:100%;">
                             <span class="song-index">${i + 1}</span>
@@ -295,6 +349,7 @@
                                 <div class="song-artist">${song.artist}</div>
                             </div>
                         </div>
+                        <div class="song-duration-text">${durationDisplay}</div>
                     `;
                     div.onclick = () => playSong(i);
                     container.appendChild(div);
@@ -305,8 +360,13 @@
                 const queueList = document.getElementById('queue-list');
                 if (!queueList) return;
                 queueList.innerHTML = '';
-                const nextSongs = songList.slice(currentSongIndex + 1);
                 
+                if (isShuffle) {
+                    queueList.innerHTML = '<div style="color:var(--accent); font-size:14px; padding: 10px 0;">🔀 Shuffle mode is active</div>';
+                    return;
+                }
+
+                const nextSongs = songList.slice(currentSongIndex + 1);
                 if (nextSongs.length === 0) {
                     queueList.innerHTML = '<div style="color:var(--text-subdued); font-size:14px;">End of queue.</div>';
                     return;
@@ -326,6 +386,7 @@
                 });
             }
 
+            // --- AUDIO PLAYBACK ---
             function playSong(index) {
                 document.querySelectorAll('.song-item').forEach(el => el.classList.remove('active-song'));
                 currentSongIndex = index;
@@ -382,7 +443,24 @@
             }
 
             function playNext() {
-                if (currentSongIndex + 1 < songList.length) playSong(currentSongIndex + 1);
+                if (isRepeat) {
+                    audio.currentTime = 0;
+                    audio.play();
+                    return;
+                }
+
+                if (isShuffle) {
+                    let nextIndex = Math.floor(Math.random() * songList.length);
+                    if (nextIndex === currentSongIndex && songList.length > 1) {
+                        nextIndex = (nextIndex + 1) % songList.length;
+                    }
+                    playSong(nextIndex);
+                    return;
+                }
+
+                if (currentSongIndex + 1 < songList.length) {
+                    playSong(currentSongIndex + 1);
+                }
             }
             
             const nextBtn = document.getElementById('next-btn');
@@ -417,26 +495,15 @@
                 };
             }
 
-            const volSlider = document.getElementById('volume-slider');
-            if(volSlider) {
-                volSlider.addEventListener('input', (e) => { audio.volume = e.target.value; });
-            }
-
             audio.onloadedmetadata = () => {
                 const totalTime = document.getElementById('time-total');
                 if(totalTime) totalTime.innerText = formatTime(audio.duration);
             }
 
-            // Kick off the load
             fetchSongs();
 
         } catch (masterError) {
-            const container = document.getElementById('song-list-container');
-            if(container) {
-                container.innerHTML = `<div style="color:#ff4444; padding:20px;"><b>FATAL JAVASCRIPT CRASH:</b><br><br>${masterError.message}</div>`;
-            } else {
-                console.error("Crash:", masterError.message);
-            }
+            console.error("Crash:", masterError.message);
         }
     </script>
 </body>

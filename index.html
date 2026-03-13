@@ -72,6 +72,8 @@
         .search-bar { background: transparent; border: none; color: var(--text-base); width: 100%; height: 48px; outline: none; }
         .view-toggle-btn { background: rgba(0,0,0,0.5); border: 1px solid #333; color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.2s; }
         .view-toggle-btn:hover { background: #333; }
+        .reset-btn { background: rgba(200,0,0,0.6); border: 1px solid #ff4444; color: white; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.2s; margin-left: 10px;}
+        .reset-btn:hover { background: red; }
 
         .view-section { position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow-y: auto; padding: 100px 32px 32px 32px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .view-section.active-view { opacity: 1; pointer-events: auto; }
@@ -142,7 +144,10 @@
                 <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C5.91 14 3 11.09 3 9.5S5.91 5 9.5 5 16 7.91 16 9.5 11.09 14 9.5 14z"/></svg>
                 <input type="text" id="search-input" class="search-bar" placeholder="Search for a song...">
             </div>
-            <button id="view-toggle-btn" class="view-toggle-btn">Switch to Grid View</button>
+            <div>
+                <button id="view-toggle-btn" class="view-toggle-btn">Switch to Grid View</button>
+                <button onclick="localStorage.clear(); sessionStorage.clear(); window.location.href=window.location.href.split('?')[0]+'?v='+new Date().getTime();" class="reset-btn">Reset App</button>
+            </div>
         </div>
 
         <div id="home-view" class="view-section active-view">
@@ -192,9 +197,6 @@
     <audio id="audio-player"></audio>
 
     <script>
-        window.addEventListener("error", function (e) { document.getElementById('song-list-container').innerHTML = `<div style="color:#ff4444; padding:20px;"><b>CRASH:</b> ${e.message}</div>`; });
-        window.addEventListener("unhandledrejection", function (e) { document.getElementById('song-list-container').innerHTML = `<div style="color:#ff4444; padding:20px;"><b>DB ERROR:</b> ${e.reason.message || e.reason}</div>`; });
-
         const supabaseUrl = 'https://xdebyjfkijaertthzjup.supabase.co';
         const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhkZWJ5amZraWphZXJ0dGh6anVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNTU4NjgsImV4cCI6MjA4ODczMTg2OH0.QPPyLb7SbY7ChzwDejlGC9dqqX0nEGiFHND402pqEDo';
         const supabase = window.supabase.createClient(supabaseUrl, anonKey);
@@ -223,11 +225,29 @@
         };
 
         async function fetchSongs() {
-            const { data, error } = await supabase.from('songs').select('*');
-            if (error) throw error;
-            if (!data || data.length === 0) return document.getElementById('song-list-container').innerHTML = 'No songs found. Check RLS policies!';
-            songList = data;
-            renderList(songList);
+            try {
+                const { data, error } = await supabase.from('songs').select('*');
+                
+                // If Supabase complains, print it to the screen
+                if (error) {
+                    document.getElementById('song-list-container').innerHTML = `<div style="color:#ff4444; padding:20px;"><b>SUPABASE ERROR:</b> ${error.message || JSON.stringify(error)}</div>`;
+                    return;
+                }
+                
+                // If Supabase returns 0 items, print it to the screen
+                if (!data || data.length === 0) {
+                    document.getElementById('song-list-container').innerHTML = `<div style="padding:20px; color:white;"><b>Database connected successfully</b>, but 0 songs were returned. Your SQL RLS policy is still blocking read access.</div>`;
+                    return;
+                }
+                
+                // Success!
+                songList = data;
+                renderList(songList);
+
+            } catch (err) {
+                // If the internet/school network drops the connection entirely
+                document.getElementById('song-list-container').innerHTML = `<div style="color:#ff4444; padding:20px;"><b>NETWORK ERROR:</b> ${err.message}</div>`;
+            }
         }
 
         function renderList(list) {
